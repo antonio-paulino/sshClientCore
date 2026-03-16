@@ -1,8 +1,8 @@
 # sshClientCore
 
-The reactive SSH engine for the Kotlin ecosystem.
+The core for the kotlin version of `sshClient`.
 
-`sshClientCore` is a lightweight, idiomatic library designed to serve as the foundation for terminal emulators and automation tools. Unlike traditional libraries, it focuses on **Coroutines** and **Flows**, ensuring your UI never freezes and data streaming remains instantaneous.
+`sshClientCore` is designed to serve as the foundation for terminal emulators and automation tools. It focuses on **Coroutines** and **Flows**, ensuring your UI never freezes and data streaming remains instantaneous.
 
 ---
 
@@ -98,8 +98,7 @@ fun main() = runBlocking {
 
 ## 🏗️ Architecture
 
-`sshClientCore` abstracts the complexity of **SSHJ** and Java's blocking I/O.  
-It exposes an API purely based on **suspension functions** and **flows**, making it easy to integrate modern patterns like **MVVM** or **MVI** in Android, Desktop, or Backend environments.
+`sshClientCore` - Exposes an API purely based on **suspension functions** and **flows**, making it easy to integrate modern patterns like **MVVM** or **MVI** in Android, Desktop, or Backend environments.
 
 ---
 
