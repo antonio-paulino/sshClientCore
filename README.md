@@ -1,8 +1,8 @@
 # sshClientCore
 
-The reactive SSH engine for the Kotlin ecosystem.
+The core for the kotlin version of `sshClient`.
 
-`sshClientCore` is a lightweight, idiomatic library designed to serve as the foundation for terminal emulators and automation tools. Unlike traditional libraries, it focuses on **Coroutines** and **Flows**, ensuring your UI never freezes and data streaming remains instantaneous.
+`sshClientCore` is designed to serve as the foundation for terminal emulators and automation tools. It focuses on **Coroutines** and **Flows**, ensuring your UI never freezes and data streaming remains instantaneous.
 
 ---
 
@@ -27,8 +27,13 @@ The reactive SSH engine for the Kotlin ecosystem.
 Add to your `build.gradle.kts`:
 
 ```kotlin
+repositories {
+    mavenCentral()
+    maven { url = uri("https://jitpack.io") }
+}
+
 dependencies {
-    implementation("pt.paulinoo:ssh-client-core:1.0.0")
+    implementation("com.github.antonio-paulino:sshClientCore:0.0.1")
 
     // Recommended for development logging
     implementation("org.slf4j:slf4j-simple:2.0.12")
@@ -112,8 +117,7 @@ fun main() = runBlocking {
 
 ## 🏗️ Architecture
 
-`sshClientCore` abstracts the complexity of **SSHJ** and Java's blocking I/O.  
-It exposes an API purely based on **suspension functions** and **flows**, making it easy to integrate modern patterns like **MVVM** or **MVI** in Android, Desktop, or Backend environments.
+`sshClientCore` - Exposes an API purely based on **suspension functions** and **flows**, making it easy to integrate modern patterns like **MVVM** or **MVI** in Android, Desktop, or Backend environments.
 
 ---
 
