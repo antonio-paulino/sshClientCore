@@ -78,9 +78,7 @@ internal class SshjClientWrapper {
                         override fun findExistingAlgorithms(
                             hostname: String?,
                             port: Int,
-                        ): List<String> {
-                            return emptyList()
-                        }
+                        ): List<String> = emptyList()
                     },
                 )
             }

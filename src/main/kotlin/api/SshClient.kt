@@ -23,6 +23,5 @@ interface SshClient {
 
     companion object {
         fun create(): SshClient = DefaultSshClient()
-
     }
 }
