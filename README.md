@@ -35,6 +35,20 @@ dependencies {
 }
 ```
 
+### Bundled library jar
+
+If you want a single distributable jar that already contains this library runtime dependencies
+(`sshj`, `kotlinx-coroutines`, `slf4j-api`, and their transitives), build the `uber` artifact:
+
+```powershell
+.\gradlew.bat assemble
+```
+
+This produces an additional library jar with classifier `uber` under `build/libs/`.
+By default, the file name will be `sshClientCore-<version>-uber.jar`.
+It is **not** an executable jar; it is intended for distribution as a self-contained library artifact.
+If you publish it, it is exposed as a separate Maven artifact named `sshClientCore-uber`.
+
 ---
 
 ## 🛠️ Quick Usage Example
