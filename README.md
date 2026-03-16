@@ -40,10 +40,6 @@ dependencies {
 ## 🛠️ Quick Usage Example
 
 ```kotlin
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import java.util.Scanner
-
 fun main() = runBlocking {
     val client = SshClient.create()
 
