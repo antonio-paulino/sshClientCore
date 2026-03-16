@@ -27,8 +27,13 @@ The core for the kotlin version of `sshClient`.
 Add to your `build.gradle.kts`:
 
 ```kotlin
+repositories {
+    mavenCentral()
+    maven { url = uri("https://jitpack.io") }
+}
+
 dependencies {
-    implementation("pt.paulinoo:sshClientCore:0.0.1")
+    implementation("com.github.antonio-paulino:sshClientCore:0.0.1")
 
     // Recommended for development logging
     implementation("org.slf4j:slf4j-simple:2.0.12")
