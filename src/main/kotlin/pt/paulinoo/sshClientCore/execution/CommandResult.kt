@@ -1,4 +1,4 @@
-package pt.paulinoo.execution
+package pt.paulinoo.sshClientCore.execution
 
 /**
  * Represents the result of a command execution, including the standard output, standard error, and exit code.

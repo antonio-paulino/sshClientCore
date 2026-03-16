@@ -1,7 +1,7 @@
-package pt.paulinoo.shell
+package pt.paulinoo.sshClientCore.shell
 
 import kotlinx.coroutines.flow.Flow
-import pt.paulinoo.utils.TerminalKey
+import pt.paulinoo.sshClientCore.utils.TerminalKey
 
 interface ShellSession {
     val output: Flow<ByteArray>

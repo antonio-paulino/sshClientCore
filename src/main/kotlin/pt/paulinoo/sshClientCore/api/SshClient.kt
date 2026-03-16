@@ -1,9 +1,9 @@
-package pt.paulinoo.api
+package pt.paulinoo.sshClientCore.api
 
-import pt.paulinoo.client.DefaultSshClient
-import pt.paulinoo.exception.AuthenticationException
-import pt.paulinoo.exception.ConnectionException
-import pt.paulinoo.exception.UnknownHostKeyException
+import pt.paulinoo.sshClientCore.client.DefaultSshClient
+import pt.paulinoo.sshClientCore.exception.AuthenticationException
+import pt.paulinoo.sshClientCore.exception.ConnectionException
+import pt.paulinoo.sshClientCore.exception.UnknownHostKeyException
 
 /**
  * Represents an SSH client that can establish connections to remote servers.

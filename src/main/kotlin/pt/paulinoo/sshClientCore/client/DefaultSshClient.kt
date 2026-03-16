@@ -1,18 +1,18 @@
-package pt.paulinoo.client
+package pt.paulinoo.sshClientCore.client
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import net.schmizz.sshj.userauth.UserAuthException
-import pt.paulinoo.api.SshClient
-import pt.paulinoo.api.SshConfig
-import pt.paulinoo.api.SshSession
-import pt.paulinoo.exception.AuthenticationException
-import pt.paulinoo.exception.ConnectionException
-import pt.paulinoo.exception.UnknownHostKeyException
-import pt.paulinoo.exception.UnknownHostKeyRuntimeException
-import pt.paulinoo.internal.SshjClientWrapper
+import pt.paulinoo.sshClientCore.api.SshClient
+import pt.paulinoo.sshClientCore.api.SshConfig
+import pt.paulinoo.sshClientCore.api.SshSession
+import pt.paulinoo.sshClientCore.exception.AuthenticationException
+import pt.paulinoo.sshClientCore.exception.ConnectionException
+import pt.paulinoo.sshClientCore.exception.UnknownHostKeyException
+import pt.paulinoo.sshClientCore.exception.UnknownHostKeyRuntimeException
+import pt.paulinoo.sshClientCore.internal.SshjClientWrapper
 
 /**
  * Default implementation of [SshClient] using SSHJ library.

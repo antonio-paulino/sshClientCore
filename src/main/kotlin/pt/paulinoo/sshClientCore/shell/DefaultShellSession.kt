@@ -1,4 +1,4 @@
-package pt.paulinoo.shell
+package pt.paulinoo.sshClientCore.shell
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,8 +13,8 @@ import kotlinx.coroutines.withContext
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.connection.channel.direct.Session
 import org.slf4j.LoggerFactory
-import pt.paulinoo.exception.ShellException
-import pt.paulinoo.utils.TerminalKey
+import pt.paulinoo.sshClientCore.exception.ShellException
+import pt.paulinoo.sshClientCore.utils.TerminalKey
 
 class DefaultShellSession(
     ssh: SSHClient,

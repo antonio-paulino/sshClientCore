@@ -6,10 +6,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runBlocking
-import pt.paulinoo.api.HostKeyVerification
-import pt.paulinoo.api.SshClient
-import pt.paulinoo.api.SshConfig
-import pt.paulinoo.utils.TerminalKey
+import pt.paulinoo.sshClientCore.api.HostKeyVerification
+import pt.paulinoo.sshClientCore.api.SshClient
+import pt.paulinoo.sshClientCore.api.SshConfig
+import pt.paulinoo.sshClientCore.utils.TerminalKey
 import java.util.Scanner
 
 fun main() =

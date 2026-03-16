@@ -1,16 +1,16 @@
-package pt.paulinoo.client
+package pt.paulinoo.sshClientCore.client
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import pt.paulinoo.api.SshSession
-import pt.paulinoo.connection.ConnectionState
-import pt.paulinoo.execution.CommandChunk
-import pt.paulinoo.execution.CommandExecutor
-import pt.paulinoo.execution.CommandResult
-import pt.paulinoo.internal.SshjClientWrapper
-import pt.paulinoo.shell.DefaultShellSession
-import pt.paulinoo.shell.ShellSession
+import pt.paulinoo.sshClientCore.api.SshSession
+import pt.paulinoo.sshClientCore.connection.ConnectionState
+import pt.paulinoo.sshClientCore.execution.CommandChunk
+import pt.paulinoo.sshClientCore.execution.CommandExecutor
+import pt.paulinoo.sshClientCore.execution.CommandResult
+import pt.paulinoo.sshClientCore.internal.SshjClientWrapper
+import pt.paulinoo.sshClientCore.shell.DefaultShellSession
+import pt.paulinoo.sshClientCore.shell.ShellSession
 
 /**
  * Default implementation of [SshSession] using SSHJ library.

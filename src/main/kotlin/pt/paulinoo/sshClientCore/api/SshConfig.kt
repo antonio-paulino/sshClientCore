@@ -1,4 +1,4 @@
-package pt.paulinoo.api
+package pt.paulinoo.sshClientCore.api
 
 import java.io.File
 

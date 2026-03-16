@@ -1,4 +1,4 @@
-package pt.paulinoo.internal
+package pt.paulinoo.sshClientCore.internal
 
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.common.DisconnectReason
@@ -7,8 +7,8 @@ import net.schmizz.sshj.connection.channel.direct.Session
 import net.schmizz.sshj.transport.DisconnectListener
 import net.schmizz.sshj.transport.verification.HostKeyVerifier
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier
-import pt.paulinoo.api.HostKeyVerification
-import pt.paulinoo.exception.UnknownHostKeyRuntimeException
+import pt.paulinoo.sshClientCore.api.HostKeyVerification
+import pt.paulinoo.sshClientCore.exception.UnknownHostKeyRuntimeException
 import java.io.File
 import java.security.PublicKey
 

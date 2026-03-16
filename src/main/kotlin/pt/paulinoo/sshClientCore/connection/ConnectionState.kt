@@ -1,4 +1,4 @@
-package pt.paulinoo.connection
+package pt.paulinoo.sshClientCore.connection
 
 /**
  * Represents the state of a connection.

@@ -1,11 +1,11 @@
-package pt.paulinoo.api
+package pt.paulinoo.sshClientCore.api
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import pt.paulinoo.connection.ConnectionState
-import pt.paulinoo.execution.CommandChunk
-import pt.paulinoo.execution.CommandResult
-import pt.paulinoo.shell.ShellSession
+import pt.paulinoo.sshClientCore.connection.ConnectionState
+import pt.paulinoo.sshClientCore.execution.CommandChunk
+import pt.paulinoo.sshClientCore.execution.CommandResult
+import pt.paulinoo.sshClientCore.shell.ShellSession
 
 /**
  * Represents an active SSH session. It provides methods to execute commands, open a shell, and monitor the connection

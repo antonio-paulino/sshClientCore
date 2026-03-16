@@ -1,4 +1,4 @@
-package pt.paulinoo.exception
+package pt.paulinoo.sshClientCore.exception
 
 /**
  * Base exception class for SSH-related errors.

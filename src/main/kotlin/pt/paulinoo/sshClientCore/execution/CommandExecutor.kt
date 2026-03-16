@@ -1,4 +1,4 @@
-package pt.paulinoo.execution
+package pt.paulinoo.sshClientCore.execution
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import net.schmizz.sshj.connection.channel.direct.Session
 import org.slf4j.LoggerFactory
-import pt.paulinoo.exception.CommandExecutionException
+import pt.paulinoo.sshClientCore.exception.CommandExecutionException
 
 internal class CommandExecutor {
     private val logger = LoggerFactory.getLogger(CommandExecutor::class.java)

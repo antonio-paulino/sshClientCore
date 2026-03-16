@@ -1,10 +1,22 @@
 plugins {
+    `maven-publish`
     kotlin("jvm") version "2.3.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
 group = "pt.paulinoo"
 version = "0.0.1"
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+            groupId = project.group.toString()
+            artifactId = project.name
+            version = project.version.toString()
+        }
+    }
+}
 
 repositories {
     mavenCentral()

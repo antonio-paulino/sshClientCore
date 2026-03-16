@@ -1,4 +1,4 @@
-package pt.paulinoo.utils
+package pt.paulinoo.sshClientCore.utils
 
 sealed class TerminalKey(
     val bytes: ByteArray,
