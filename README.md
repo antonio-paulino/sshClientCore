@@ -1,5 +1,7 @@
 # sshClientCore
 
+[![](https://jitpack.io/v/antonio-paulino/sshClientCore.svg)](https://jitpack.io/#antonio-paulino/sshClientCore)
+
 The core for the kotlin version of `sshClient`.
 
 `sshClientCore` is designed to serve as the foundation for terminal emulators and automation tools. It focuses on **Coroutines** and **Flows**, ensuring your UI never freezes and data streaming remains instantaneous.
