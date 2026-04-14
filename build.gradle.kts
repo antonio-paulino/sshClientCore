@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "pt.paulinoo"
-version = "0.0.1"
+version = "0.0.2"
 
 publishing {
     publications {
