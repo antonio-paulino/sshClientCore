@@ -33,7 +33,7 @@ Add to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("pt.paulinoo:ssh-client-core:0.0.2")
+    implementation("com.github.antonio-paulino:sshClientCore:0.0.2")
 
     // Recommended for development logging
     implementation("org.slf4j:slf4j-simple:2.0.17")
