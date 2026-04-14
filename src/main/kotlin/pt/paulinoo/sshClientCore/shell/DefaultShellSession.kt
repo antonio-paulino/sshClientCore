@@ -10,14 +10,13 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.schmizz.sshj.SSHClient
-import net.schmizz.sshj.connection.channel.direct.Session
 import org.slf4j.LoggerFactory
 import pt.paulinoo.sshClientCore.exception.ShellException
+import pt.paulinoo.sshClientCore.internal.ShellChannel
 import pt.paulinoo.sshClientCore.utils.TerminalKey
 
-class DefaultShellSession(
-    ssh: SSHClient,
+internal class DefaultShellSession(
+    private val channel: ShellChannel,
 ) : ShellSession {
     private val logger = LoggerFactory.getLogger(DefaultShellSession::class.java)
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -28,22 +27,10 @@ class DefaultShellSession(
         )
     override val output: Flow<ByteArray> = _output
 
-    private val session: Session = ssh.startSession()
-    private val shell: Session.Shell
-
     init {
-        try {
-            logger.info("Allocating PTY and starting shell session...")
-            session.allocatePTY("xterm-256color", 80, 24, 0, 0, emptyMap())
-            shell = session.startShell()
-        } catch (e: Exception) {
-            logger.error("Failed to initialize shell", e)
-            throw ShellException(e)
-        }
-
         scope.launch {
             val buffer = ByteArray(8192)
-            shell.inputStream.use { input ->
+            channel.input.use { input ->
                 while (isActive) {
                     val read = withContext(Dispatchers.IO) { input.read(buffer) }
                     if (read == -1) break
@@ -56,8 +43,8 @@ class DefaultShellSession(
     override suspend fun send(data: ByteArray) =
         withContext(Dispatchers.IO) {
             try {
-                shell.outputStream.write(data)
-                shell.outputStream.flush()
+                channel.output.write(data)
+                channel.output.flush()
                 logger.trace("Sent {} bytes to shell", data.size)
             } catch (e: Exception) {
                 logger.error("Failed to send data to shell", e)
@@ -76,7 +63,7 @@ class DefaultShellSession(
         rows: Int,
     ) = withContext(Dispatchers.IO) {
         try {
-            shell.changeWindowDimensions(cols, rows, 0, 0)
+            channel.resize(cols, rows)
             logger.debug("Resized shell to {} x {}", cols, rows)
         } catch (e: Exception) {
             logger.error("Failed to resize shell", e)
@@ -87,7 +74,6 @@ class DefaultShellSession(
     override suspend fun close() =
         withContext(Dispatchers.IO) {
             scope.cancel()
-            shell.close()
-            session.close()
+            channel.close()
         }
 }

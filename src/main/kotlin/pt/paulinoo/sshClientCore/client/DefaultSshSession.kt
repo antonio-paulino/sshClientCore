@@ -8,7 +8,7 @@ import pt.paulinoo.sshClientCore.connection.ConnectionState
 import pt.paulinoo.sshClientCore.execution.CommandChunk
 import pt.paulinoo.sshClientCore.execution.CommandExecutor
 import pt.paulinoo.sshClientCore.execution.CommandResult
-import pt.paulinoo.sshClientCore.internal.SshjClientWrapper
+import pt.paulinoo.sshClientCore.internal.SshBackendClient
 import pt.paulinoo.sshClientCore.shell.DefaultShellSession
 import pt.paulinoo.sshClientCore.shell.ShellSession
 
@@ -19,14 +19,14 @@ import pt.paulinoo.sshClientCore.shell.ShellSession
  * @param wrapper The SSHJ client wrapper to manage the SSH connection.
  */
 internal class DefaultSshSession(
-    private val wrapper: SshjClientWrapper,
+    private val backend: SshBackendClient,
 ) : SshSession {
     private val state = MutableStateFlow<ConnectionState>(ConnectionState.Connected)
     override val connectionState: StateFlow<ConnectionState> = state
     private val executor = CommandExecutor()
 
     init {
-        wrapper.onDisconnect { error ->
+        backend.onDisconnect { error ->
             if (error != null) {
                 state.value = ConnectionState.Error(error)
             } else {
@@ -35,20 +35,16 @@ internal class DefaultSshSession(
         }
     }
 
-    override suspend fun execute(command: String): CommandResult =
-        wrapper.startSession().use { session ->
-            executor.executeBlocking(session, command)
-        }
+    override suspend fun execute(command: String): CommandResult = executor.executeBlocking(backend.startExec(command), command)
 
     override fun executeStreaming(command: String): Flow<CommandChunk> {
-        val session = wrapper.startSession()
-        return executor.executeStreaming(session, command)
+        return executor.executeStreaming(backend.startExec(command), command)
     }
 
-    override suspend fun openShell(): ShellSession = DefaultShellSession(wrapper.raw())
+    override suspend fun openShell(): ShellSession = DefaultShellSession(backend.startShell())
 
     override suspend fun disconnect() {
-        wrapper.disconnect()
+        backend.disconnect()
         state.value = ConnectionState.Disconnected
     }
 }

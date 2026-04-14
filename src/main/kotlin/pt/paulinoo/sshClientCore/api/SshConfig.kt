@@ -47,4 +47,11 @@ data class SshConfig(
     val timeoutMillis: Long = 10000,
     val keepAliveIntervalSeconds: Int = 15,
     val hostKeyVerification: HostKeyVerification = HostKeyVerification.Promiscuous,
+    val backend: SshBackend = SshBackend.SSHJ,
 )
+
+enum class SshBackend {
+    SSHJ,
+    JSCH,
+}
+

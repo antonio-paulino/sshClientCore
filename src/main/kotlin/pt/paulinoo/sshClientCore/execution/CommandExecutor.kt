@@ -7,31 +7,23 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import net.schmizz.sshj.connection.channel.direct.Session
 import org.slf4j.LoggerFactory
 import pt.paulinoo.sshClientCore.exception.CommandExecutionException
+import pt.paulinoo.sshClientCore.internal.ExecChannel
 
 internal class CommandExecutor {
     private val logger = LoggerFactory.getLogger(CommandExecutor::class.java)
 
     fun executeStreaming(
-        session: Session,
+        channel: ExecChannel,
         command: String,
     ): Flow<CommandChunk> =
         channelFlow {
             logger.debug("Starting streaming command: {}", command)
 
-            val cmd =
-                try {
-                    session.exec(command)
-                } catch (e: Exception) {
-                    logger.error("Failed to start streaming command: {}", command, e)
-                    throw CommandExecutionException(e)
-                }
-
             // Stream de Stdout
             launch(Dispatchers.IO) {
-                cmd.inputStream.bufferedReader().use { reader ->
+                channel.stdout.bufferedReader().use { reader ->
                     while (true) {
                         val line = reader.readLine() ?: break
                         send(CommandChunk.Stdout(line + "\n"))
@@ -41,7 +33,7 @@ internal class CommandExecutor {
 
             // Stream de Stderr
             launch(Dispatchers.IO) {
-                cmd.errorStream.bufferedReader().use { reader ->
+                channel.stderr.bufferedReader().use { reader ->
                     while (true) {
                         val line = reader.readLine() ?: break
                         send(CommandChunk.Stderr(line + "\n"))
@@ -50,39 +42,46 @@ internal class CommandExecutor {
             }
 
             launch(Dispatchers.IO) {
-                cmd.join()
-                send(CommandChunk.ExitCode(cmd.exitStatus ?: -1))
+                channel.join()
+                send(CommandChunk.ExitCode(channel.exitStatus()))
+                channel.close()
             }
         }.flowOn(Dispatchers.IO)
 
     suspend fun executeBlocking(
-        session: Session,
+        channel: ExecChannel,
         command: String,
     ): CommandResult =
         coroutineScope {
             logger.debug("Starting blocking command: {}", command)
 
-            val cmd =
-                try {
-                    session.exec(command)
-                } catch (e: Exception) {
-                    logger.error("Failed to execute blocking command: {}", command, e)
-                    throw CommandExecutionException(e)
-                }
+            try {
+                val stdoutDeferred =
+                    async(Dispatchers.IO) {
+                        channel.stdout.bufferedReader().use { it.readText() }
+                    }
+                val stderrDeferred =
+                    async(Dispatchers.IO) {
+                        channel.stderr.bufferedReader().use { it.readText() }
+                    }
+                val joinDeferred =
+                    async(Dispatchers.IO) {
+                        runCatching { channel.join() }
+                    }
 
-            val stdoutDeferred =
-                async(Dispatchers.IO) {
-                    cmd.inputStream.bufferedReader().use { it.readText() }
-                }
-            val stderrDeferred =
-                async(Dispatchers.IO) {
-                    cmd.errorStream.bufferedReader().use { it.readText() }
-                }
+                // Some backends (notably JSch) may only close streams once the channel is finished.
+                joinDeferred.await().getOrThrow()
+                // Force EOF on streams for backends that keep stderr/stdout open until channel close.
+                channel.close()
+                val stdout = stdoutDeferred.await()
+                val stderr = stderrDeferred.await()
 
-            val stdout = stdoutDeferred.await()
-            val stderr = stderrDeferred.await()
-            cmd.join()
-
-            CommandResult(stdout, stderr, cmd.exitStatus ?: -1)
+                CommandResult(stdout, stderr, channel.exitStatus())
+            } catch (e: Exception) {
+                logger.error("Failed to execute blocking command: {}", command, e)
+                throw CommandExecutionException(e)
+            } finally {
+                channel.close()
+            }
         }
 }

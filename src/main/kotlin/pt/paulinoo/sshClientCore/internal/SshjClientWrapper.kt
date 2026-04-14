@@ -7,9 +7,11 @@ import net.schmizz.sshj.connection.channel.direct.Session
 import net.schmizz.sshj.transport.DisconnectListener
 import net.schmizz.sshj.transport.verification.HostKeyVerifier
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier
+import net.schmizz.sshj.userauth.UserAuthException
 import pt.paulinoo.sshClientCore.api.HostKeyVerification
+import pt.paulinoo.sshClientCore.api.SshConfig
+import pt.paulinoo.sshClientCore.exception.AuthenticationException
 import pt.paulinoo.sshClientCore.exception.UnknownHostKeyRuntimeException
-import java.io.File
 import java.security.PublicKey
 
 /**
@@ -20,42 +22,19 @@ import java.security.PublicKey
  * The disconnect listener is set up to differentiate between intentional disconnections (BY_APPLICATION)
  * and unexpected connection losses, allowing the application to react accordingly.
  */
-internal class SshjClientWrapper {
+internal class SshjClientWrapper : SshBackendClient {
     private val ssh = SSHClient()
 
-    /**
-     * Connects to the SSH server with the specified parameters and host key verification strategy.
-     * The host key verification is set up based on the provided strategy:
-     * - Promiscuous: Accepts all host keys without verification.
-     * - Fingerprint: Verifies the host key against a specific expected fingerprint.
-     * - KnownHosts: Verifies the host key against entries in a known_hosts file.
-     * - Strict: Verifies the host key against a set of accepted fingerprints, rejecting unknown keys.
-     * The connection and read timeouts are configured according to the provided timeoutMillis parameter.
-     *
-     * @param host The SSH server hostname or IP address.
-     * @param port The SSH server port.
-     * @param keepAliveSeconds The interval in seconds for sending keep-alive messages.
-     * @param timeoutMillis The connection and read timeout in milliseconds.
-     * @param verification The host key verification strategy to use for this connection.
-     * @throws UnknownHostKeyRuntimeException if the host key verification fails in Strict mode, containing details
-     * about the unknown key.
-     */
-    fun connect(
-        host: String,
-        port: Int,
-        keepAliveSeconds: Int,
-        timeoutMillis: Long,
-        verification: HostKeyVerification,
-    ) {
-        when (verification) {
+    override fun connect(config: SshConfig) {
+        when (config.hostKeyVerification) {
             is HostKeyVerification.Promiscuous -> {
                 ssh.addHostKeyVerifier(PromiscuousVerifier())
             }
             is HostKeyVerification.Fingerprint -> {
-                ssh.addHostKeyVerifier(verification.expected)
+                ssh.addHostKeyVerifier(config.hostKeyVerification.expected)
             }
             is HostKeyVerification.KnownHosts -> {
-                ssh.loadKnownHosts(verification.file)
+                ssh.loadKnownHosts(config.hostKeyVerification.file)
             }
 
             is HostKeyVerification.Strict -> {
@@ -68,7 +47,7 @@ internal class SshjClientWrapper {
                         ): Boolean {
                             val fingerprint = SecurityUtils.getFingerprint(key)
 
-                            if (verification.acceptedFingerprints.contains(fingerprint)) {
+                            if (config.hostKeyVerification.acceptedFingerprints.contains(fingerprint)) {
                                 return true
                             } else {
                                 throw UnknownHostKeyRuntimeException(hostname, fingerprint, key.algorithm)
@@ -84,13 +63,23 @@ internal class SshjClientWrapper {
             }
         }
 
-        ssh.connectTimeout = timeoutMillis.toInt()
-        ssh.timeout = timeoutMillis.toInt()
+        ssh.connectTimeout = config.timeoutMillis.toInt()
+        ssh.timeout = config.timeoutMillis.toInt()
 
-        ssh.connect(host, port)
+        ssh.connect(config.host, config.port)
 
-        if (keepAliveSeconds > 0) {
-            ssh.connection.keepAlive.keepAliveInterval = keepAliveSeconds
+        if (config.keepAliveIntervalSeconds > 0) {
+            ssh.connection.keepAlive.keepAliveInterval = config.keepAliveIntervalSeconds
+        }
+
+        try {
+            when {
+                config.password != null -> ssh.authPassword(config.username, config.password)
+                config.privateKey != null -> ssh.authPublickey(config.username, config.privateKey.absolutePath)
+                else -> error("No auth method")
+            }
+        } catch (e: UserAuthException) {
+            throw AuthenticationException(e)
         }
     }
 
@@ -105,7 +94,7 @@ internal class SshjClientWrapper {
      * @param listener A callback function that takes a Throwable? parameter, which will be null for intentional
      * disconnections and an Exception for unexpected connection losses.
      */
-    fun onDisconnect(listener: (Throwable?) -> Unit) {
+    override fun onDisconnect(listener: (Throwable?) -> Unit) {
         ssh.transport.disconnectListener =
             DisconnectListener { reason, message ->
                 if (reason == DisconnectReason.BY_APPLICATION) {
@@ -116,49 +105,51 @@ internal class SshjClientWrapper {
             }
     }
 
-    /**
-     * Authenticates with the SSH server using the provided username and password. This method will attempt to
-     * authenticate using SSHJ's password authentication mechanism. If the authentication fails, an exception will be
-     * thrown, which should be handled by the caller to provide appropriate feedback to the user or take corrective
-     * action.
-     *
-     * @param user The username to authenticate with.
-     * @param pass The password to authenticate with.
-     * @throws Exception if the authentication fails, such as due to incorrect credentials or connection issues
-     */
-    fun authPassword(
-        user: String,
-        pass: String,
-    ) = ssh.authPassword(user, pass)
+    override fun startExec(command: String): ExecChannel {
+        val session = ssh.startSession()
+        val commandChannel = session.exec(command)
+        return object : ExecChannel {
+            override val stdout = commandChannel.inputStream
+            override val stderr = commandChannel.errorStream
 
-    /**
-     * Authenticates with the SSH server using the provided username and private key file. This method will attempt to
-     * authenticate using SSHJ's public key authentication mechanism. The private key file should be in a format
-     * supported by SSHJ (e.g., OpenSSH format). If the authentication fails, an exception will be thrown, which should
-     * be handled by the caller to provide appropriate feedback to the user or take corrective action.
-     *
-     * @param user The username to authenticate with.
-     * @param key The private key file to authenticate with.
-     * @throws Exception if the authentication fails, such as due to incorrect credentials, unsupported key format, or
-     * connection issues
-     */
-    fun authKey(
-        user: String,
-        key: File,
-    ) = ssh.authPublickey(user, key.absolutePath)
+            override fun join() {
+                commandChannel.join()
+            }
 
-    /**
-     * Starts a new SSH session on the established connection. This method will create and return a new Session object
-     * from SSHJ, which can be used to execute commands, open shells, and perform other SSH operations. The caller is
-     * responsible for managing the lifecycle of the session, including closing it when finished to free up resources
-     * on the server.
-     *
-     * @return A new Session object representing the SSH session that can be used for executing commands and other
-     * operations.
-     * @throws Exception if an error occurs while starting the session, such as connection issues or server problems,
-     * which should be handled by the caller to provide appropriate feedback or take corrective action.
-     */
-    fun startSession(): Session = ssh.startSession()
+            override fun exitStatus(): Int = commandChannel.exitStatus ?: -1
+
+            override fun close() {
+                commandChannel.close()
+                session.close()
+            }
+        }
+    }
+
+    override fun startShell(
+        cols: Int,
+        rows: Int,
+    ): ShellChannel {
+        val session: Session = ssh.startSession()
+        session.allocatePTY("xterm-256color", cols, rows, 0, 0, emptyMap())
+        val shell = session.startShell()
+
+        return object : ShellChannel {
+            override val input = shell.inputStream
+            override val output = shell.outputStream
+
+            override fun resize(
+                cols: Int,
+                rows: Int,
+            ) {
+                shell.changeWindowDimensions(cols, rows, 0, 0)
+            }
+
+            override fun close() {
+                shell.close()
+                session.close()
+            }
+        }
+    }
 
     /**
      * Disconnects the SSH client, closing the underlying connection to the SSH server. This method should be called
@@ -168,14 +159,5 @@ internal class SshjClientWrapper {
      * @throws Exception if an error occurs during disconnection, such as network issues or server problems, which
      * should be handled by the caller to provide appropriate feedback or take corrective action.
      */
-    fun disconnect() = ssh.disconnect()
-
-    /**
-     * Returns the underlying SSHClient instance from SSHJ. This method is intended for internal use within the library
-     * to allow access to SSHJ's features that may not be directly exposed through the wrapper. Consumers of the
-     * library should not need to interact with the raw SSHClient instance, and it is recommended to use the provided
-     * methods in the wrapper for most operations to ensure proper handling of connections, authentication, and error
-     * management.
-     */
-    fun raw(): SSHClient = ssh
+    override fun disconnect() = ssh.disconnect()
 }
