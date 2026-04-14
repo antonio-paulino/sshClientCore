@@ -33,10 +33,10 @@ Add to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("pt.paulinoo:ssh-client-core:1.0.0")
+    implementation("pt.paulinoo:ssh-client-core:0.0.2")
 
     // Recommended for development logging
-    implementation("org.slf4j:slf4j-simple:2.0.12")
+    implementation("org.slf4j:slf4j-simple:2.0.17")
 }
 ```
 
