@@ -50,9 +50,7 @@ class DefaultShellSessionTest {
         runBlocking {
             val throwingOutput =
                 object : OutputStream() {
-                    override fun write(b: Int) {
-                        throw IllegalStateException("write failed")
-                    }
+                    override fun write(b: Int): Unit = throw IllegalStateException("write failed")
                 }
             val shellChannel =
                 FakeShellChannel(
@@ -79,4 +77,3 @@ class DefaultShellSessionTest {
             assertTrue(error.cause != null)
         }
 }
-

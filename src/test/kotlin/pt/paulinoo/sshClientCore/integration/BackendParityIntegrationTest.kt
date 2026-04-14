@@ -1,13 +1,13 @@
 package pt.paulinoo.sshClientCore.integration
 import kotlinx.coroutines.runBlocking
+import pt.paulinoo.sshClientCore.api.HostKeyVerification
+import pt.paulinoo.sshClientCore.api.Ssh
 import pt.paulinoo.sshClientCore.api.SshBackend
 import pt.paulinoo.sshClientCore.api.SshConfig
-import pt.paulinoo.sshClientCore.api.HostKeyVerification
 import pt.paulinoo.sshClientCore.exception.ConnectionException
-import pt.paulinoo.sshClientCore.api.Ssh
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertIs
+
 class BackendParityIntegrationTest {
     @Test
     fun `both backends handle unreachable host with same error type`(): Unit =

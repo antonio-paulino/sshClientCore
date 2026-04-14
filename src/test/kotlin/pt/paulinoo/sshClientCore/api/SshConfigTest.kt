@@ -29,4 +29,3 @@ class SshConfigTest {
         assertEquals(SshBackend.JSCH, config.backend)
     }
 }
-

@@ -11,8 +11,8 @@ import pt.paulinoo.sshClientCore.api.Ssh
 import pt.paulinoo.sshClientCore.api.SshBackend
 import pt.paulinoo.sshClientCore.api.SshConfig
 import pt.paulinoo.sshClientCore.api.SshSession
-import pt.paulinoo.sshClientCore.execution.CommandChunk
 import pt.paulinoo.sshClientCore.exception.UnknownHostKeyException
+import pt.paulinoo.sshClientCore.execution.CommandChunk
 import java.io.Console
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
@@ -24,7 +24,8 @@ fun main() =
         val password = System.getenv("SSH_PASS")
         val privateKeyPath = System.getenv("SSH_KEY")
         val port = System.getenv("SSH_PORT")?.toIntOrNull() ?: 22
-        val backend = System.getenv("SSH_BACKEND")?.uppercase()?.let { runCatching { SshBackend.valueOf(it) }.getOrNull() } ?: SshBackend.JSCH
+        val backend =
+            System.getenv("SSH_BACKEND")?.uppercase()?.let { runCatching { SshBackend.valueOf(it) }.getOrNull() } ?: SshBackend.JSCH
         val trustOnFirstUse = (System.getenv("SSH_TOFU") ?: "true").toBoolean()
         val knownHostsFile = ensureKnownHostsFile()
 
@@ -92,16 +93,17 @@ private suspend fun interactiveTerminal(
                     }
 
                 var exitCode = -1
-                val completed = kotlinx.coroutines.withTimeoutOrNull(30000.milliseconds) {
-                    session.executeStreaming(effectiveCommand).collect { chunk ->
-                        when (chunk) {
-                            is CommandChunk.Stdout -> print(stripAnsi(chunk.data))
-                            is CommandChunk.Stderr -> System.err.print(stripAnsi(chunk.data))
-                            is CommandChunk.ExitCode -> exitCode = chunk.code
+                val completed =
+                    kotlinx.coroutines.withTimeoutOrNull(30000.milliseconds) {
+                        session.executeStreaming(effectiveCommand).collect { chunk ->
+                            when (chunk) {
+                                is CommandChunk.Stdout -> print(stripAnsi(chunk.data))
+                                is CommandChunk.Stderr -> System.err.print(stripAnsi(chunk.data))
+                                is CommandChunk.ExitCode -> exitCode = chunk.code
+                            }
                         }
+                        true
                     }
-                    true
-                }
 
                 if (completed == null) {
                     println("\nCommand timed out after 30s")
@@ -163,38 +165,40 @@ private suspend fun shellInteractiveRawMode(shell: pt.paulinoo.sshClientCore.she
         val finished = CompletableDeferred<Unit>()
         val typedBuffer = StringBuilder()
 
-        val inputJob = launch(kotlinx.coroutines.Dispatchers.IO) {
-            try {
-                shell.output.collect { bytes ->
-                    System.out.write(bytes)
-                    System.out.flush()
-                }
-            } finally {
-                if (!finished.isCompleted) finished.complete(Unit)
-            }
-        }
-
-        val keyJob = launch(kotlinx.coroutines.Dispatchers.IO) {
-            try {
-                val input = terminal.input()
-                while (true) {
-                    val b = input.read()
-                    if (b == -1 || b == 29) break
-                    shell.send(byteArrayOf(b.toByte()))
-
-                    when (b) {
-                        10, 13 -> {
-                            if (typedBuffer.toString().trim() == "exit") break
-                            typedBuffer.setLength(0)
-                        }
-                        8, 127 -> if (typedBuffer.isNotEmpty()) typedBuffer.setLength(typedBuffer.length - 1)
-                        else -> if (b in 32..126 && typedBuffer.length < 64) typedBuffer.append(b.toChar())
+        val inputJob =
+            launch(kotlinx.coroutines.Dispatchers.IO) {
+                try {
+                    shell.output.collect { bytes ->
+                        System.out.write(bytes)
+                        System.out.flush()
                     }
+                } finally {
+                    if (!finished.isCompleted) finished.complete(Unit)
                 }
-            } finally {
-                if (!finished.isCompleted) finished.complete(Unit)
             }
-        }
+
+        val keyJob =
+            launch(kotlinx.coroutines.Dispatchers.IO) {
+                try {
+                    val input = terminal.input()
+                    while (true) {
+                        val b = input.read()
+                        if (b == -1 || b == 29) break
+                        shell.send(byteArrayOf(b.toByte()))
+
+                        when (b) {
+                            10, 13 -> {
+                                if (typedBuffer.toString().trim() == "exit") break
+                                typedBuffer.setLength(0)
+                            }
+                            8, 127 -> if (typedBuffer.isNotEmpty()) typedBuffer.setLength(typedBuffer.length - 1)
+                            else -> if (b in 32..126 && typedBuffer.length < 64) typedBuffer.append(b.toChar())
+                        }
+                    }
+                } finally {
+                    if (!finished.isCompleted) finished.complete(Unit)
+                }
+            }
 
         try {
             finished.await()
@@ -209,9 +213,10 @@ private suspend fun shellInteractiveRawMode(shell: pt.paulinoo.sshClientCore.she
 
 private suspend fun shellInteractiveLineMode(shell: pt.paulinoo.sshClientCore.shell.ShellSession) {
     kotlinx.coroutines.coroutineScope {
-        val inputJob = launch(kotlinx.coroutines.Dispatchers.IO) {
-            shell.output.collect { bytes -> print(stripAnsi(String(bytes))) }
-        }
+        val inputJob =
+            launch(kotlinx.coroutines.Dispatchers.IO) {
+                shell.output.collect { bytes -> print(stripAnsi(String(bytes))) }
+            }
         while (true) {
             val input = readlnOrNull() ?: break
             if (input.trim() == "exit") break
@@ -232,8 +237,9 @@ private suspend fun connectWithKnownHostsHandshake(
         if (!trustOnFirstUse) throw e
         println("First connection to ${config.host}:${config.port}. Fingerprint: ${e.fingerprint}")
         if (!confirmHostTrust()) throw IllegalStateException("Host key rejected")
-        val knownHosts = (config.hostKeyVerification as? HostKeyVerification.KnownHosts)?.file
-            ?: throw IllegalStateException("KnownHosts required")
+        val knownHosts =
+            (config.hostKeyVerification as? HostKeyVerification.KnownHosts)?.file
+                ?: throw IllegalStateException("KnownHosts required")
         bootstrapKnownHostWithJsch(config, knownHosts)
         client.connect(config)
     }
@@ -258,7 +264,10 @@ private fun confirmHostTrust(): Boolean {
     return answer.equals("yes", true) || answer.equals("y", true)
 }
 
-private fun bootstrapKnownHostWithJsch(config: SshConfig, knownHostsFile: File) {
+private fun bootstrapKnownHostWithJsch(
+    config: SshConfig,
+    knownHostsFile: File,
+) {
     val jsch = JSch()
     jsch.setKnownHosts(knownHostsFile.absolutePath)
     config.privateKey?.let { jsch.addIdentity(it.absolutePath) }
@@ -270,11 +279,18 @@ private fun bootstrapKnownHostWithJsch(config: SshConfig, knownHostsFile: File) 
     session.userInfo =
         object : UserInfo {
             override fun getPassphrase(): String? = null
+
             override fun getPassword(): String? = config.password
+
             override fun promptPassword(message: String?): Boolean = config.password != null
+
             override fun promptPassphrase(message: String?): Boolean = false
+
             override fun promptYesNo(message: String?): Boolean = true
-            override fun showMessage(message: String?) { if (!message.isNullOrBlank()) println(message) }
+
+            override fun showMessage(message: String?) {
+                if (!message.isNullOrBlank()) println(message)
+            }
         }
 
     try {
@@ -289,4 +305,3 @@ private fun stripAnsi(text: String): String {
     val oscRegex = Regex("\\u001B\\].*?(\\u0007|\\u001B\\\\)")
     return text.replace(csiRegex, "").replace(oscRegex, "")
 }
-

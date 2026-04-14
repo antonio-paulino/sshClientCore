@@ -199,4 +199,3 @@ internal class JschClientWrapper : SshBackendClient {
         }
     }
 }
-

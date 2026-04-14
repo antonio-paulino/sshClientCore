@@ -102,4 +102,3 @@ internal class FakeBackendClient(
         disconnectListener?.invoke(error)
     }
 }
-

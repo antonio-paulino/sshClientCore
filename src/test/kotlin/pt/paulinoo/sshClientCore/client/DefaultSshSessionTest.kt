@@ -116,4 +116,3 @@ class DefaultSshSessionTest {
             assertIs<ConnectionState.Connected>(state)
         }
 }
-

@@ -16,4 +16,3 @@ internal interface SshBackendClient {
 
     fun disconnect()
 }
-

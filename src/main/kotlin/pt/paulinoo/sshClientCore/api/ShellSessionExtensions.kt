@@ -2,7 +2,6 @@ package pt.paulinoo.sshClientCore.api
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import pt.paulinoo.sshClientCore.shell.ShellSession
 
@@ -24,4 +23,3 @@ fun ShellSession.consumeOutput(
 suspend fun ShellSession.sendLine(line: String) {
     send(line + "\n")
 }
-

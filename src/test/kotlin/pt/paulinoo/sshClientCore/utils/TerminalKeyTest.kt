@@ -18,4 +18,3 @@ class TerminalKeyTest {
         assertContentEquals(byteArrayOf(0x1B, 0x5B, 0x41), TerminalKey.ArrowUp.bytes)
     }
 }
-

@@ -11,4 +11,3 @@ internal interface ExecChannel : Closeable {
 
     fun exitStatus(): Int
 }
-

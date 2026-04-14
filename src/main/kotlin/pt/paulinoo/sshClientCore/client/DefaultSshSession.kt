@@ -37,9 +37,7 @@ internal class DefaultSshSession(
 
     override suspend fun execute(command: String): CommandResult = executor.executeBlocking(backend.startExec(command), command)
 
-    override fun executeStreaming(command: String): Flow<CommandChunk> {
-        return executor.executeStreaming(backend.startExec(command), command)
-    }
+    override fun executeStreaming(command: String): Flow<CommandChunk> = executor.executeStreaming(backend.startExec(command), command)
 
     override suspend fun openShell(): ShellSession = DefaultShellSession(backend.startShell())
 

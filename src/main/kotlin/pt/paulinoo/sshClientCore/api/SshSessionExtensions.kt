@@ -1,6 +1,5 @@
 package pt.paulinoo.sshClientCore.api
 
-import kotlinx.coroutines.flow.collect
 import pt.paulinoo.sshClientCore.execution.CommandChunk
 
 /**
@@ -22,5 +21,3 @@ suspend fun SshSession.executeLive(
     }
     return exitCode
 }
-
-

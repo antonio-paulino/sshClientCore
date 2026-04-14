@@ -54,4 +54,3 @@ enum class SshBackend {
     SSHJ,
     JSCH,
 }
-

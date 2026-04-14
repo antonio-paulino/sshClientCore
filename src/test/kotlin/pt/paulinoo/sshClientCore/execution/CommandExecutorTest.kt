@@ -66,4 +66,3 @@ class CommandExecutorTest {
             assertTrue(channel.closeCalled)
         }
 }
-

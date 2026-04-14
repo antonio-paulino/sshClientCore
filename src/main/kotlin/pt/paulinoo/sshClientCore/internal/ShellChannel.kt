@@ -13,4 +13,3 @@ internal interface ShellChannel : Closeable {
         rows: Int,
     )
 }
-

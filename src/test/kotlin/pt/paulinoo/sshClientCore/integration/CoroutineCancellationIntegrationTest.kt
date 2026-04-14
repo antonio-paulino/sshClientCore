@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import pt.paulinoo.sshClientCore.api.HostKeyVerification
 import pt.paulinoo.sshClientCore.api.SshConfig
 import kotlin.test.Test
+
 class CoroutineCancellationIntegrationTest {
     @Test
     fun `cancelled execution doesn't crash`() =

@@ -8,7 +8,6 @@ plugins {
 group = "pt.paulinoo"
 version = "0.0.1"
 
-
 publishing {
     publications {
         create<MavenPublication>("maven") {
@@ -110,9 +109,12 @@ tasks.register("writeRuntimeClasspath") {
     description = "Writes examples runtime classpath to build/runtime-classpath.txt"
     dependsOn("examplesClasses")
     doLast {
-        val outFile = layout.buildDirectory.file("runtime-classpath.txt").get().asFile
+        val outFile =
+            layout.buildDirectory
+                .file("runtime-classpath.txt")
+                .get()
+                .asFile
         outFile.parentFile.mkdirs()
         outFile.writeText(sourceSets["examples"].runtimeClasspath.asPath)
     }
 }
-
